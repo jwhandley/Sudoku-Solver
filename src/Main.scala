@@ -16,6 +16,8 @@ object Main {
       )
     )
 
+    println(s"Initial puzzle: ${puzzle.render()}")
+
     val startTime = System.currentTimeMillis()
     val solution = puzzle.solve()
     solution match {
