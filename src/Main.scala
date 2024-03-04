@@ -84,19 +84,18 @@ case class Sudoku(grid: Vector[Vector[Int]]) {
   private def updated(r: Int, c: Int, move: Int): Sudoku = Sudoku(
     grid.updated(r, grid(r).updated(c, move))
   )
-  private def validMoves(r: Int, c: Int): Set[Int] = grid(r)(c) match {
+  private def validMoves(r: Int, c: Int): Seq[Int] = grid(r)(c) match {
     case 0 =>
-      val row = grid(r).toSet
-      val col = grid.map(row => row(c)).toSet
+      val row = grid(r)
+      val col = grid.map(row => row(c))
       val cell = grid
         .slice((r / 3) * 3, (r / 3) * 3 + 3)
         .flatMap(row => row.slice((c / 3) * 3, (c / 3) * 3 + 3))
-        .toSet
 
-      val toExclude = row ++ col ++ cell
-
-      Range.inclusive(1, 9).toSet -- toExclude
-    case _ => Set.empty
+      for (
+        m <- 1 to 9 if !row.contains(m) && !col.contains(m) && !cell.contains(m)
+      ) yield m
+    case _ => Seq.empty
   }
 
   private def isValid: Boolean = !Range(0, 9).exists { i =>
