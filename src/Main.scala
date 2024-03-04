@@ -57,9 +57,9 @@ object Sudoku {
 case class Sudoku(grid: Vector[Vector[Int]]) {
   def solve(): Option[Sudoku] = {
     @tailrec
-    def rec(toSolve: List[Sudoku], solved: List[Sudoku] = Nil): List[Sudoku] = {
+    def rec(toSolve: List[Sudoku]): Option[Sudoku] = {
       toSolve match {
-        case Nil => solved
+        case Nil => None
         case head :: tail =>
           val grid = head.grid
           val zeros = for {
@@ -69,18 +69,18 @@ case class Sudoku(grid: Vector[Vector[Int]]) {
 
           zeros.headOption match {
             case None =>
-              rec(tail, head +: solved)
+              Some(head)
             case Some((r, c)) =>
               val newGrids = head
                 .validMoves(r, c)
                 .map(move => head.updated(r, c, move))
                 .toList
-              rec(newGrids ++ tail, solved)
+              rec(newGrids ++ tail)
           }
       }
     }
     if (!isValid) None
-    else rec(List(this)).headOption
+    else rec(List(this))
   }
 
   private def updated(r: Int, c: Int, move: Int): Sudoku = Sudoku(
