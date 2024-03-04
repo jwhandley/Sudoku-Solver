@@ -28,7 +28,11 @@ object Main {
     }
   }
 }
-case class Sudoku(grid: Vector[Vector[Int]]) {
+case class Sudoku(
+    grid: Vector[Vector[Int]],
+    startRow: Int = 0,
+    startCol: Int = 0
+) {
   def solve(): Option[Sudoku] = {
     @tailrec
     def rec(
@@ -55,17 +59,21 @@ case class Sudoku(grid: Vector[Vector[Int]]) {
   }
 
   private def firstZero(): Option[(Int, Int)] = {
-    for (r <- 0 until 9) {
-      for (c <- 0 until 9) {
+    for (r <- startRow until 9) {
+      val colStart = if (r == 0) startCol else 0
+      for (c <- colStart until 9) {
         if (grid(r)(c) == 0) return Some((r, c))
       }
     }
     None
   }
 
-  private def updated(r: Int, c: Int, move: Int): Sudoku = Sudoku(
-    grid.updated(r, grid(r).updated(c, move))
-  )
+  private def updated(r: Int, c: Int, move: Int): Sudoku = {
+    val nextGrid = grid.updated(r, grid(r).updated(c, move))
+    val nextRow = r + (c + 1) / 9
+    val nextCol = (c + 1) % 9
+    Sudoku(nextGrid, nextRow, nextCol)
+  }
   private def validMoves(r: Int, c: Int): Seq[Int] = grid(r)(c) match {
     case 0 =>
       val row = grid(r)
