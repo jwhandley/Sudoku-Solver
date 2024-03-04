@@ -20,40 +20,14 @@ object Main {
 
     val startTime = System.currentTimeMillis()
     val solution = puzzle.solve()
+    val solveTime = System.currentTimeMillis() - startTime
     solution match {
       case Some(s) =>
-        println(
-          s"Solution found in ${System.currentTimeMillis() - startTime}ms! ${s.render()}"
-        )
+        println(s"Solution found in ${solveTime}ms! ${s.render()}")
       case None => println("No solution found")
     }
-
-//    puzzle.validateState()
   }
 }
-
-object Sudoku {
-  def parseInput(input: String): Sudoku = {
-    if (input.length != 81)
-      throw new Exception("Sudoku board must be 81 characters long")
-    Sudoku(
-      input
-        .grouped(9)
-        .map(row =>
-          row.map {
-            case c if c.isDigit => c.asDigit
-            case c if c == '.'  => 0
-            case _ =>
-              throw new Exception(
-                "Sudoku board must contain only digits or '.'s"
-              )
-          }.toVector
-        )
-        .toVector
-    )
-  }
-}
-
 case class Sudoku(grid: Vector[Vector[Int]]) {
   def solve(): Option[Sudoku] = {
     @tailrec
@@ -79,6 +53,7 @@ case class Sudoku(grid: Vector[Vector[Int]]) {
           }
       }
     }
+
     if (!isValid) None
     else rec(List(this))
   }
