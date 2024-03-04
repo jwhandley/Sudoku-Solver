@@ -31,7 +31,9 @@ object Main {
 case class Sudoku(grid: Vector[Vector[Int]]) {
   def solve(): Option[Sudoku] = {
     @tailrec
-    def rec(toSolve: List[Sudoku]): Option[Sudoku] = {
+    def rec(
+        toSolve: List[Sudoku]
+    ): Option[Sudoku] = {
       toSolve match {
         case Nil => None
         case head :: tail =>
