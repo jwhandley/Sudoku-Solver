@@ -31,18 +31,14 @@ object Main {
 case class Sudoku(grid: Vector[Vector[Int]]) {
   def solve(): Option[Sudoku] = {
     @tailrec
-    def rec(
-        toSolve: List[Sudoku],
-        startRow: Int = 0,
-        startCol: Int = 0
-    ): Option[Sudoku] = {
+    def rec(toSolve: List[Sudoku]): Option[Sudoku] = {
       toSolve match {
         case Nil => None
         case head :: tail =>
           val grid = head.grid
           val zeros = for {
-            r <- startRow until 9
-            c <- startCol until 9 if grid(r)(c) == 0
+            r <- 0 until 9
+            c <- 0 until 9 if grid(r)(c) == 0
           } yield (r, c)
 
           zeros.headOption match {
@@ -53,7 +49,7 @@ case class Sudoku(grid: Vector[Vector[Int]]) {
                 .validMoves(r, c)
                 .map(move => head.updated(r, c, move))
                 .toList
-              rec(newGrids ++ tail, r + 1, c + 1)
+              rec(newGrids ++ tail)
           }
       }
     }

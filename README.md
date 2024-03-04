@@ -2,8 +2,9 @@
 
 A very simple Sudoku solver written in Scala.
 Uses a depth-first search algorithm written in a functional style.
+Currently not very performant as the goal was to maximise the readability and developer experience as opposed to optimizing speed.
 
-For example, the program solves this hard puzzle in approximately 60ms:
+For example, the program solves this hard puzzle in approximately 1 second:
 
 ```
 +-------+-------+-------+  
