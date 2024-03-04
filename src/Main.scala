@@ -37,13 +37,7 @@ case class Sudoku(grid: Vector[Vector[Int]]) {
       toSolve match {
         case Nil => None
         case head :: tail =>
-          val grid = head.grid
-          val zeros = for {
-            r <- 0 until 9
-            c <- 0 until 9 if grid(r)(c) == 0
-          } yield (r, c)
-
-          zeros.headOption match {
+          head.firstZero() match {
             case None =>
               Some(head)
             case Some((r, c)) =>
@@ -58,6 +52,15 @@ case class Sudoku(grid: Vector[Vector[Int]]) {
 
     if (!isValid) None
     else rec(List(this))
+  }
+
+  private def firstZero(): Option[(Int, Int)] = {
+    for (r <- 0 until 9) {
+      for (c <- 0 until 9) {
+        if (grid(r)(c) == 0) return Some((r, c))
+      }
+    }
+    None
   }
 
   private def updated(r: Int, c: Int, move: Int): Sudoku = Sudoku(
