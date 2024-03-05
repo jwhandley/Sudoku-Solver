@@ -1,30 +1,64 @@
 import scala.collection.mutable
 
 object Main {
+  private val puzzles = List(
+    Array(
+      Array(1, 0, 0, 0, 0, 6, 5, 0, 0),
+      Array(0, 0, 0, 0, 5, 9, 0, 0, 0),
+      Array(8, 0, 0, 4, 0, 0, 0, 0, 6),
+      Array(2, 0, 0, 7, 0, 0, 0, 0, 4),
+      Array(0, 0, 1, 6, 0, 0, 0, 3, 0),
+      Array(0, 0, 0, 0, 0, 0, 0, 0, 0),
+      Array(0, 0, 7, 1, 0, 0, 0, 0, 2),
+      Array(0, 0, 9, 0, 0, 0, 0, 0, 5),
+      Array(0, 0, 3, 9, 7, 0, 4, 0, 0)
+    ),
+    Array(
+      Array(3, 0, 6, 5, 0, 8, 4, 0, 0),
+      Array(5, 2, 0, 0, 0, 0, 0, 0, 0),
+      Array(0, 8, 7, 0, 0, 0, 0, 3, 1),
+      Array(0, 0, 3, 0, 1, 0, 0, 8, 0),
+      Array(9, 0, 0, 8, 6, 3, 0, 0, 5),
+      Array(0, 5, 0, 0, 9, 0, 6, 0, 0),
+      Array(1, 3, 0, 0, 0, 0, 2, 5, 0),
+      Array(0, 0, 0, 0, 0, 0, 0, 7, 4),
+      Array(0, 0, 5, 2, 0, 6, 3, 0, 0)
+    ),
+    Array(
+      Array(5, 3, 0, 0, 7, 0, 0, 0, 0),
+      Array(6, 0, 0, 1, 9, 5, 0, 0, 0),
+      Array(0, 9, 8, 0, 0, 0, 0, 6, 0),
+      Array(8, 0, 0, 0, 6, 0, 0, 0, 3),
+      Array(4, 0, 0, 8, 0, 3, 0, 0, 1),
+      Array(7, 0, 0, 0, 2, 0, 0, 0, 6),
+      Array(0, 6, 0, 0, 0, 0, 2, 8, 0),
+      Array(0, 0, 0, 4, 1, 9, 0, 0, 5),
+      Array(0, 0, 0, 0, 8, 0, 0, 7, 9)
+    ),
+    Array(
+      Array(0, 0, 0, 0, 0, 0, 0, 0, 0),
+      Array(0, 0, 0, 0, 0, 3, 0, 8, 5),
+      Array(0, 0, 1, 0, 2, 0, 0, 0, 0),
+      Array(0, 0, 0, 5, 0, 7, 0, 0, 0),
+      Array(0, 0, 4, 0, 0, 0, 1, 0, 0),
+      Array(0, 9, 0, 0, 0, 0, 0, 0, 0),
+      Array(5, 0, 0, 0, 0, 0, 0, 7, 3),
+      Array(0, 0, 2, 0, 1, 0, 0, 0, 0),
+      Array(0, 0, 0, 0, 4, 0, 0, 0, 9)
+    )
+  )
   def main(args: Array[String]): Unit = {
-    val puzzle =
-      Array(
-        Array(5, 3, 0, 0, 7, 0, 0, 0, 0),
-        Array(6, 0, 0, 1, 9, 5, 0, 0, 0),
-        Array(0, 9, 8, 0, 0, 0, 0, 6, 0),
-        Array(8, 0, 0, 0, 6, 0, 0, 0, 3),
-        Array(4, 0, 0, 8, 0, 3, 0, 0, 1),
-        Array(7, 0, 0, 0, 2, 0, 0, 0, 6),
-        Array(0, 6, 0, 0, 0, 0, 2, 8, 0),
-        Array(0, 0, 0, 4, 1, 9, 0, 0, 5),
-        Array(0, 0, 0, 0, 8, 0, 0, 7, 9)
-      )
-    // Warmup iteration, cuts time down by 100x
-    Sudoku.solve(puzzle)
-    println(s"Initial puzzle: ${Sudoku.render(puzzle)}")
+    puzzles.foreach { puzzle =>
+      println(s"Initial puzzle: ${Sudoku.render(puzzle)}")
+      val startTime = System.nanoTime()
+      val solution = Sudoku.solve(puzzle)
+      val solveTime = (System.nanoTime() - startTime) / 1e6
 
-    val startTime = System.nanoTime()
-    val solution = Sudoku.solve(puzzle)
-    val solveTime = (System.nanoTime() - startTime) / 1e6
-    solution match {
-      case Some(s) =>
-        println(s"Solution found in ${solveTime}ms! ${Sudoku.render(s)}")
-      case None => println("No solution found")
+      solution match {
+        case Some(s) =>
+          println(s"Solution found in ${solveTime}ms! ${Sudoku.render(s)}")
+        case None => println("No solution found")
+      }
     }
   }
 }
@@ -61,7 +95,11 @@ object Sudoku {
       allMoves -- rowContains(r) -- colContains(c) -- cellContains(cell)
     }
   }
-  def solve(grid: Array[Array[Int]]): Option[Array[Array[Int]]] = {
+  def solve(grid: Array[Array[Int]]): Option[Array[Array[Int]]] = if (
+    !isValid(grid)
+  ) None
+  else {
+
     val rowContains = Range(0, 9).map(r => mutable.BitSet(grid(r): _*))
     val colContains =
       Range(0, 9).map(c => mutable.BitSet(grid.map(row => row(c)): _*))
