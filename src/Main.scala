@@ -1,5 +1,4 @@
 import scala.collection.mutable
-import scala.collection.mutable.BitSet
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -82,23 +81,22 @@ object Sudoku {
     val board =
       Board(grid, rowContains, colContains, cellContains, empty.toList)
 
-    def helper(board: Board): Option[Board] = {
+    def helper(board: Board): Boolean = {
       board.emptySquares match {
-        case Nil => Some(board)
+        case Nil => true
         case (r, c) :: _ =>
-          board
-            .validMoves(r, c)
-            .collectFirst(Function.unlift { move =>
-              board.move(r, c, move)
-              val result = helper(board)
-              if (result.isEmpty)
-                board.undoMove(r, c, move)
-              result
-            })
+          val moves = board.validMoves(r, c)
+          moves.exists { move =>
+            board.move(r, c, move)
+            val result = helper(board)
+            board.undoMove(r, c, move)
+            result
+          }
       }
     }
 
-    helper(board).map(_.grid)
+    val result = helper(board)
+    if (result) Some(board.grid) else None
   }
   private def isValid(grid: Array[Array[Int]]): Boolean = !Range(0, 9).exists {
     i =>
