@@ -1,3 +1,5 @@
+import scala.collection.immutable.BitSet
+
 object Main {
   def main(args: Array[String]): Unit = {
     val puzzle =
@@ -27,54 +29,67 @@ object Main {
 }
 
 object Sudoku {
-  def solve(
+  private case class Board(
       grid: Array[Array[Int]],
-      startRow: Int = 0,
-      startCol: Int = 0
-  ): Option[Array[Array[Int]]] =
-    findFirstEmpty(grid, startRow, startCol) match {
-      case None => Some(grid)
-      case Some((r, c)) =>
-        val nextRow = r + (c + 1) / 9
-        val nextCol = (c + 1) % 9
-        val newGrids = validMoves(grid, r, c).map(move =>
-          grid.updated(r, grid(r).updated(c, move))
-        )
-        newGrids.map(grid => solve(grid, nextRow, nextCol)).collectFirst {
-          case Some(grid) => grid
-        }
+      rowContains: Array[BitSet],
+      colContains: Array[BitSet],
+      cellContains: Array[BitSet],
+      emptySquares: List[(Int, Int)]
+  ) {
+    def updated(r: Int, c: Int, move: Int): Board = {
+      val newGrid = grid.updated(r, grid(r).updated(c, move))
+      val newRowContains = rowContains.updated(r, rowContains(r) + move)
+      val newColContains = colContains.updated(c, colContains(c) + move)
+      val cell = (r / 3) * 3 + c / 3
+      val newCellContains =
+        cellContains.updated(cell, cellContains(cell) + move)
+      Board(
+        newGrid,
+        newRowContains,
+        newColContains,
+        newCellContains,
+        emptySquares.tail
+      )
     }
 
-  private def findFirstEmpty(
-      grid: Array[Array[Int]],
-      startRow: Int,
-      startCol: Int
-  ): Option[(Int, Int)] = {
-    for (r <- startRow until 9) {
-      val colStart = if (r == 0) startCol else 0
-      for (c <- colStart until 9) {
-        if (grid(r)(c) == 0) return Some((r, c))
-      }
+    def validMoves(r: Int, c: Int): Set[Int] = {
+      val allMoves = Set(1, 2, 3, 4, 5, 6, 7, 8, 9)
+      val cell = (r / 3) * 3 + c / 3
+      allMoves -- rowContains(r) -- colContains(c) -- cellContains(cell)
     }
-    None
   }
+  def solve(grid: Array[Array[Int]]): Option[Array[Array[Int]]] = {
+    val rowContains = Range(0, 9).map(r => BitSet(grid(r): _*)).toArray
+    val colContains =
+      Range(0, 9).map(c => BitSet(grid.map(row => row(c)): _*)).toArray
+    val cellContains = Range(0, 9).map { cell =>
+      val r = cell / 3 * 3
+      val c = cell % 3 * 3
+      BitSet(grid.slice(r, r + 3).flatMap(row => row.slice(c, c + 3)): _*)
+    }.toArray
 
-  private def validMoves(grid: Array[Array[Int]], r: Int, c: Int): Seq[Int] =
-    grid(r)(c) match {
-      case 0 =>
-        val row = grid(r)
-        val col = grid.map(row => row(c))
-        val cell = grid
-          .slice((r / 3) * 3, (r / 3) * 3 + 3)
-          .flatMap(row => row.slice((c / 3) * 3, (c / 3) * 3 + 3))
+    val empty = for {
+      r <- 0 until 9
+      c <- 0 until 9
+      if grid(r)(c) == 0
+    } yield (r, c)
 
-        for (
-          m <- 1 to 9
-          if !row.contains(m) && !col.contains(m) && !cell.contains(m)
-        ) yield m
-      case _ => Seq.empty
-    }
+    val board =
+      Board(grid, rowContains, colContains, cellContains, empty.toList)
 
+    def helper(board: Board): Option[Board] =
+      board.emptySquares match {
+        case Nil => Some(board)
+        case (r, c) :: _ =>
+          board
+            .validMoves(r, c)
+            .view
+            .flatMap(move => helper(board.updated(r, c, move)))
+            .headOption
+      }
+
+    helper(board).map(_.grid)
+  }
   private def isValid(grid: Array[Array[Int]]): Boolean = !Range(0, 9).exists {
     i =>
       val row = Range(0, 9).map(grid(i)(_)).filter(_ != 0)
