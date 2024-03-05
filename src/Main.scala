@@ -1,4 +1,5 @@
-import scala.collection.immutable.BitSet
+import scala.collection.mutable
+import scala.collection.mutable.BitSet
 
 object Main {
   def main(args: Array[String]): Unit = {
@@ -31,25 +32,27 @@ object Main {
 object Sudoku {
   private case class Board(
       grid: Array[Array[Int]],
-      rowContains: IndexedSeq[BitSet],
-      colContains: IndexedSeq[BitSet],
-      cellContains: IndexedSeq[BitSet],
-      emptySquares: List[(Int, Int)]
+      rowContains: IndexedSeq[mutable.BitSet],
+      colContains: IndexedSeq[mutable.BitSet],
+      cellContains: IndexedSeq[mutable.BitSet],
+      var emptySquares: List[(Int, Int)]
   ) {
-    def updated(r: Int, c: Int, move: Int): Board = {
-      val newGrid = grid.updated(r, grid(r).updated(c, move))
-      val newRowContains = rowContains.updated(r, rowContains(r) + move)
-      val newColContains = colContains.updated(c, colContains(c) + move)
+    def move(r: Int, c: Int, move: Int): Unit = {
+      grid(r)(c) = move
+      rowContains(r) += move
+      colContains(c) += move
       val cell = (r / 3) * 3 + c / 3
-      val newCellContains =
-        cellContains.updated(cell, cellContains(cell) + move)
-      Board(
-        newGrid,
-        newRowContains,
-        newColContains,
-        newCellContains,
-        emptySquares.tail
-      )
+      cellContains(cell) += move
+      emptySquares = emptySquares.tail
+    }
+
+    def undoMove(r: Int, c: Int, move: Int): Unit = {
+      grid(r)(c) = 0
+      rowContains(r) -= move
+      colContains(c) -= move
+      val cell = (r / 3) * 3 + c / 3
+      cellContains(cell) -= move
+      emptySquares = (r, c) +: emptySquares
     }
 
     def validMoves(r: Int, c: Int): Set[Int] = {
@@ -59,13 +62,15 @@ object Sudoku {
     }
   }
   def solve(grid: Array[Array[Int]]): Option[Array[Array[Int]]] = {
-    val rowContains = Range(0, 9).map(r => BitSet(grid(r): _*))
+    val rowContains = Range(0, 9).map(r => mutable.BitSet(grid(r): _*))
     val colContains =
-      Range(0, 9).map(c => BitSet(grid.map(row => row(c)): _*))
+      Range(0, 9).map(c => mutable.BitSet(grid.map(row => row(c)): _*))
     val cellContains = Range(0, 9).map { cell =>
       val r = cell / 3 * 3
       val c = cell % 3 * 3
-      BitSet(grid.slice(r, r + 3).flatMap(row => row.slice(c, c + 3)): _*)
+      mutable.BitSet(
+        grid.slice(r, r + 3).flatMap(row => row.slice(c, c + 3)): _*
+      )
     }
 
     val empty = for {
@@ -81,11 +86,15 @@ object Sudoku {
       board.emptySquares match {
         case Nil => Some(board)
         case (r, c) :: _ =>
-          board
-            .validMoves(r, c)
-            .view
-            .flatMap(move => helper(board.updated(r, c, move)))
-            .headOption
+          val moves = board.validMoves(r, c)
+          for (move <- moves) {
+            board.move(r, c, move)
+            if (helper(board).isDefined) {
+              return Some(board)
+            }
+            board.undoMove(r, c, move)
+          }
+          None
       }
 
     helper(board).map(_.grid)
