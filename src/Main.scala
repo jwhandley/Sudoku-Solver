@@ -37,27 +37,27 @@ object Sudoku {
       cellContains: IndexedSeq[mutable.BitSet],
       var emptySquares: List[(Int, Int)]
   ) {
+    private val allMoves = Set(1, 2, 3, 4, 5, 6, 7, 8, 9)
+    private def getCell(r: Int, c: Int): Int = (r / 3) * 3 + c / 3
     def move(r: Int, c: Int, move: Int): Unit = {
       grid(r)(c) = move
       rowContains(r) += move
       colContains(c) += move
-      val cell = (r / 3) * 3 + c / 3
+      val cell = getCell(r, c)
       cellContains(cell) += move
       emptySquares = emptySquares.tail
     }
 
     def undoMove(r: Int, c: Int, move: Int): Unit = {
-      grid(r)(c) = 0
       rowContains(r) -= move
       colContains(c) -= move
-      val cell = (r / 3) * 3 + c / 3
+      val cell = getCell(r, c)
       cellContains(cell) -= move
       emptySquares = (r, c) +: emptySquares
     }
 
     def validMoves(r: Int, c: Int): Set[Int] = {
-      val allMoves = Set(1, 2, 3, 4, 5, 6, 7, 8, 9)
-      val cell = (r / 3) * 3 + c / 3
+      val cell = getCell(r, c)
       allMoves -- rowContains(r) -- colContains(c) -- cellContains(cell)
     }
   }
@@ -82,20 +82,21 @@ object Sudoku {
     val board =
       Board(grid, rowContains, colContains, cellContains, empty.toList)
 
-    def helper(board: Board): Option[Board] =
+    def helper(board: Board): Option[Board] = {
       board.emptySquares match {
         case Nil => Some(board)
         case (r, c) :: _ =>
-          val moves = board.validMoves(r, c)
-          for (move <- moves) {
-            board.move(r, c, move)
-            if (helper(board).isDefined) {
-              return Some(board)
-            }
-            board.undoMove(r, c, move)
-          }
-          None
+          board
+            .validMoves(r, c)
+            .collectFirst(Function.unlift { move =>
+              board.move(r, c, move)
+              val result = helper(board)
+              if (result.isEmpty)
+                board.undoMove(r, c, move)
+              result
+            })
       }
+    }
 
     helper(board).map(_.grid)
   }
