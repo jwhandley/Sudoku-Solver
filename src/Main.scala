@@ -4,15 +4,15 @@ object Main {
   def main(args: Array[String]): Unit = {
     val puzzle =
       Array(
-        Array(0, 0, 8, 0, 0, 7, 0, 0, 0),
-        Array(0, 4, 0, 9, 0, 0, 0, 6, 0),
-        Array(1, 9, 0, 0, 8, 3, 5, 0, 0),
-        Array(0, 0, 0, 0, 0, 8, 0, 1, 0),
-        Array(6, 0, 0, 0, 0, 0, 0, 4, 0),
-        Array(0, 0, 0, 7, 0, 0, 3, 0, 0),
-        Array(8, 0, 1, 0, 0, 9, 2, 7, 0),
-        Array(0, 0, 3, 0, 0, 0, 0, 0, 0),
-        Array(0, 0, 6, 0, 0, 0, 4, 0, 5)
+        Array(1, 0, 0, 0, 0, 6, 5, 0, 0),
+        Array(0, 0, 0, 0, 5, 9, 0, 0, 0),
+        Array(8, 0, 0, 4, 0, 0, 0, 0, 6),
+        Array(2, 0, 0, 7, 0, 0, 0, 0, 4),
+        Array(0, 0, 1, 6, 0, 0, 0, 3, 0),
+        Array(0, 0, 0, 0, 0, 0, 0, 0, 0),
+        Array(0, 0, 7, 1, 0, 0, 0, 0, 2),
+        Array(0, 0, 9, 0, 0, 0, 0, 0, 5),
+        Array(0, 0, 3, 9, 7, 0, 4, 0, 0)
       )
 
     println(s"Initial puzzle: ${Sudoku.render(puzzle)}")
