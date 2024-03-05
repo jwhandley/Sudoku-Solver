@@ -31,9 +31,9 @@ object Main {
 object Sudoku {
   private case class Board(
       grid: Array[Array[Int]],
-      rowContains: Array[BitSet],
-      colContains: Array[BitSet],
-      cellContains: Array[BitSet],
+      rowContains: IndexedSeq[BitSet],
+      colContains: IndexedSeq[BitSet],
+      cellContains: IndexedSeq[BitSet],
       emptySquares: List[(Int, Int)]
   ) {
     def updated(r: Int, c: Int, move: Int): Board = {
@@ -59,14 +59,14 @@ object Sudoku {
     }
   }
   def solve(grid: Array[Array[Int]]): Option[Array[Array[Int]]] = {
-    val rowContains = Range(0, 9).map(r => BitSet(grid(r): _*)).toArray
+    val rowContains = Range(0, 9).map(r => BitSet(grid(r): _*))
     val colContains =
-      Range(0, 9).map(c => BitSet(grid.map(row => row(c)): _*)).toArray
+      Range(0, 9).map(c => BitSet(grid.map(row => row(c)): _*))
     val cellContains = Range(0, 9).map { cell =>
       val r = cell / 3 * 3
       val c = cell % 3 * 3
       BitSet(grid.slice(r, r + 3).flatMap(row => row.slice(c, c + 3)): _*)
-    }.toArray
+    }
 
     val empty = for {
       r <- 0 until 9
