@@ -4,22 +4,23 @@ object Main {
   def main(args: Array[String]): Unit = {
     val puzzle =
       Array(
-        Array(1, 0, 0, 0, 0, 6, 5, 0, 0),
-        Array(0, 0, 0, 0, 5, 9, 0, 0, 0),
-        Array(8, 0, 0, 4, 0, 0, 0, 0, 6),
-        Array(2, 0, 0, 7, 0, 0, 0, 0, 4),
-        Array(0, 0, 1, 6, 0, 0, 0, 3, 0),
-        Array(0, 0, 0, 0, 0, 0, 0, 0, 0),
-        Array(0, 0, 7, 1, 0, 0, 0, 0, 2),
-        Array(0, 0, 9, 0, 0, 0, 0, 0, 5),
-        Array(0, 0, 3, 9, 7, 0, 4, 0, 0)
+        Array(5, 3, 0, 0, 7, 0, 0, 0, 0),
+        Array(6, 0, 0, 1, 9, 5, 0, 0, 0),
+        Array(0, 9, 8, 0, 0, 0, 0, 6, 0),
+        Array(8, 0, 0, 0, 6, 0, 0, 0, 3),
+        Array(4, 0, 0, 8, 0, 3, 0, 0, 1),
+        Array(7, 0, 0, 0, 2, 0, 0, 0, 6),
+        Array(0, 6, 0, 0, 0, 0, 2, 8, 0),
+        Array(0, 0, 0, 4, 1, 9, 0, 0, 5),
+        Array(0, 0, 0, 0, 8, 0, 0, 7, 9)
       )
-
+    // Warmup iteration, cuts time down by 100x
+    Sudoku.solve(puzzle)
     println(s"Initial puzzle: ${Sudoku.render(puzzle)}")
 
-    val startTime = System.currentTimeMillis()
+    val startTime = System.nanoTime()
     val solution = Sudoku.solve(puzzle)
-    val solveTime = System.currentTimeMillis() - startTime
+    val solveTime = (System.nanoTime() - startTime) / 1e6
     solution match {
       case Some(s) =>
         println(s"Solution found in ${solveTime}ms! ${Sudoku.render(s)}")
